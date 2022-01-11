@@ -13,6 +13,7 @@ import com.intellij.openapi.options.*
 import com.intellij.openapi.project.*
 import com.intellij.openapi.roots.*
 import com.intellij.openapi.ui.*
+import com.intellij.openapi.util.*
 import com.intellij.psi.*
 import com.intellij.ui.*
 import com.intellij.ui.components.*
@@ -24,11 +25,13 @@ import com.jetbrains.rd.swing.*
 import com.jetbrains.rd.util.reactive.*
 import org.osgi.framework.*
 import org.osgi.framework.Constants.*
+import org.osgi.framework.Version
 import java.awt.*
 import java.awt.event.*
 import java.util.*
 import javax.swing.*
 import javax.swing.tree.*
+import kotlin.Pair
 
 class TargetConfigurable(private val project: Project) : SearchableConfigurable, PanelWithAnchor {
     private val service by lazy { TargetDefinitionService.getInstance(project) }
@@ -436,7 +439,10 @@ class TargetConfigurable(private val project: Project) : SearchableConfigurable,
         defaultPath: String = "",
         defaultAlis: String = ""
     ) : DialogWrapper(project), PanelWithAnchor {
-        private val fileDescription = FileChooserDescriptorFactory.createSingleFolderDescriptor()
+        private val fileDescription = FileChooserDescriptorFactory.createSingleFileOrFolderDescriptor()
+            .withFileFilter { file ->
+                file.isDirectory || Comparing.equal(file.getExtension(), "target", file.isCaseSensitive())
+            };
         private var myAnchor: JComponent? = null
 
         private val aliasField = JBTextField(defaultAlis)

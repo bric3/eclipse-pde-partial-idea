@@ -118,19 +118,26 @@ class TargetLocationDefinition(_location: String = "") : BackgroundResolvable {
         indicator.text = "Resolving location $location"
         indicator.checkCanceled()
 
-        val directory = File(location)
-        if (!directory.isDirectory) return
-        if (!directory.exists()) return
+        val path = File(location)
+        if (!path.exists()) return
 
-        when {
-            SystemInfo.isMac -> File(directory.parentFile, "MacOS/eclipse").takeIf(File::exists)
-            SystemInfo.isWindows -> arrayOf("Teamcenter.exe", "eclipse.exe").map { File(directory, it) }
-                .firstOrNull(File::exists)
-            else -> File(directory, "eclipse").takeIf(File::exists)
-        }?.also { launcher = it.canonicalPath }
+        if (path.isDirectory) {
+            when {
+                SystemInfo.isMac -> File(path.parentFile, "MacOS/eclipse").takeIf(File::exists)
+                SystemInfo.isWindows -> arrayOf("Teamcenter.exe", "eclipse.exe").map { File(path, it) }
+                    .firstOrNull(File::exists)
+                else -> File(path, "eclipse").takeIf(File::exists)
+            }?.also { launcher = it.canonicalPath }
+        } else {
+            if (!path.isFile && path.extension == "target") {
+                // bail out if path is not a directory, it's not a normal file, and it's extension is not a ".target"
+                return
+            }
+        }
+        // TODO configure launcher for target file
 
         indicator.checkCanceled()
-        PdeBundleProviderRegistry.instance.resolveLocation(directory, this) { file ->
+        PdeBundleProviderRegistry.instance.resolveLocation(path, this) { file ->
             if (file.exists()) {
                 indicator.checkCanceled()
                 indicator.text2 = "Resolving file $file"

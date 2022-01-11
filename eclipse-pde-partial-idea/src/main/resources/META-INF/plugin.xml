@@ -98,6 +98,10 @@
                 id="EclipseP2BundleProvider"
                 order="before EclipseSDKBundleProvider"
                 implementation="cn.varsa.idea.pde.partial.plugin.provider.EclipseP2BundleProvider"/>
+        <targetBundlesProvider
+                id="PlatformConfigurationTargetBundleProvider"
+                order="first"
+                implementation="cn.varsa.idea.pde.partial.plugin.provider.PlatformConfigurationTargetBundleProvider"/>
     </extensions>
 
     <projectListeners>
